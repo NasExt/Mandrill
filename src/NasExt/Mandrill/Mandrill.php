@@ -2,9 +2,7 @@
 
 /**
  * This file is part of the NasExt extensions of Nette Framework
- *
  * Copyright (c) 20013 Dusan Hudak (http://dusan-hudak.com)
- *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
  */
@@ -15,11 +13,13 @@ use Nette\Object;
 
 /**
  * Mandrill service for Nette
- *
  * @author Dusan Hudak
  */
-class Mandrill extends Object
-{
+class Mandrill extends Object {
+
+	/** @var array */
+	private static $errorMap = array();
+
 	/** @var string */
 	private $apiKey;
 
@@ -41,44 +41,36 @@ class Mandrill extends Object
 	/** @var Logger */
 	private $logger;
 
-
 	/**
 	 * @param string $apiKey
 	 */
-	public function __construct($apiKey)
-	{
+	public function __construct($apiKey) {
 		$this->apiKey = $apiKey;
 	}
-
 
 	/**
 	 * @param bool $value
 	 */
-	public function setLoggerStatus($value)
-	{
+	public function setLoggerStatus($value) {
 		$this->loggerStatus = $value;
 	}
-
 
 	/**
 	 * @return Logger
 	 */
-	public function getLogger()
-	{
+	public function getLogger() {
 		return $this->logger;
 	}
-
 
 	/**
 	 * Call Mandrill API
 	 * @param string $url
-	 * @param array $request
+	 * @param array  $request
 	 * @return string Result from Mandrill
 	 * @throws HttpException
 	 * @throws MandrillException
 	 */
-	public function callApi($url, array $request)
-	{
+	public function callApi($url, array $request) {
 		$request = array('message' => $request);
 		$request['key'] = $this->apiKey;
 		$request = json_encode($request);
@@ -100,7 +92,7 @@ class Mandrill extends Object
 
 			$this->logger->setCallTo($this->apiEndpoint . $url . '.' . $this->apiFormat);
 			$this->logger->setRequest($request);
-			$curlBuffer = fopen('php://memory', 'w+');
+			$curlBuffer = fopen('php://temp', 'w+');
 			curl_setopt($ch, CURLOPT_STDERR, $curlBuffer);
 			$start = microtime(TRUE);
 		}
@@ -134,19 +126,17 @@ class Mandrill extends Object
 		return $result;
 	}
 
-
 	/**
 	 * @param string $result
 	 * @return mixed
 	 * @throws MandrillException
 	 */
-	private function castError($result)
-	{
+	private function castError($result) {
 		if ($result['status'] !== 'error' || !$result['name']) {
 			throw new MandrillException('We received an unexpected error: ' . json_encode($result));
 		}
 
-		$class = (isset(self::$errorMap[$result['name']])) ? self::$errorMap[$result['name']] : 'MandrillException';
+		$class = (isset(self::$errorMap[$result['name']])) ? self::$errorMap[$result['name']] : MandrillException::class;
 		return new $class($result['message'], $result['code']);
 	}
 }
