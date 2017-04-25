@@ -17,7 +17,7 @@ Installation
 The best way to install NasExt/Mandrill is using  [Composer](http://getcomposer.org/):
 
 ```sh
-$ composer require nasext/mandrill:@dev
+$ composer require nasext/mandrill
 ```
 
 Enable the extension using your neon config.
