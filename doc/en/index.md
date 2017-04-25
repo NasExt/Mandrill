@@ -81,11 +81,14 @@ or you can use:
 Send message with template
 --------------------
 ```php
-$template = new Nette\Templating\FileTemplate('email.latte');
-$template->registerFilter(new Nette\Latte\Engine);
-$template->orderId = 123;
+$latte = $this->latteFactory->create();
+$latte->addProvider("uiPresenter", $this->presenter);
+$latte->addProvider("uiControl", $this->presenter);
+
+$params = ['orderId' => 123];
+UIMacros::install($latte->getCompiler());
 ...
-$msg->setHTMLBody($template);
+$msg->setHTMLBody($latte->renderToString('email.latte', $params));
 ..
 $this->mailer->send($msg);
 ```
